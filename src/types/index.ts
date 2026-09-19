@@ -19,4 +19,7 @@ export interface Opportunity {
   interests: string[];
   sourceUrl: string;
   applicationUrl: string;
+  sourceType?: string;
+  verifiedAt?: string;
+  verificationStatus?: string;
 }
