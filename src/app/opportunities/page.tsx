@@ -81,9 +81,13 @@ export default function OpportunitiesPage() {
 
       <div className="grid gap-6">
         {opportunities.map((opp) => (
-          <div key={opp.id} className="border rounded-lg p-6 shadow-sm bg-white">
+          <div 
+            key={opp.id} 
+            onClick={() => router.push(`/opportunities/${encodeURIComponent(opp.id)}`)}
+            className="border rounded-lg p-6 shadow-sm bg-white cursor-pointer hover:shadow-md transition-shadow group"
+          >
             <div className="flex justify-between items-start mb-2">
-              <h2 className="text-xl font-semibold text-gray-900">{opp.title}</h2>
+              <h2 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{opp.title}</h2>
               <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded font-medium">
                 {opp.type}
               </span>
@@ -91,7 +95,7 @@ export default function OpportunitiesPage() {
             
             <p className="text-gray-700 font-medium mb-3">{opp.organization}</p>
             
-            <p className="text-gray-600 mb-4">{opp.description}</p>
+            <p className="text-gray-600 mb-4 line-clamp-3">{opp.description}</p>
 
             {opp.reasons.length > 0 && (
               <div className="mb-4 bg-blue-50 border border-blue-100 p-3 rounded-md">
@@ -109,7 +113,7 @@ export default function OpportunitiesPage() {
                 <strong>Location:</strong> {opp.location}
               </div>
               <div>
-                <strong>Deadline:</strong> {opp.deadline}
+                <strong>Deadline:</strong> {opp.deadline || "Rolling"}
               </div>
             </div>
 
@@ -127,18 +131,22 @@ export default function OpportunitiesPage() {
                 href={opp.sourceUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-blue-600 hover:underline text-sm font-medium"
+                onClick={(e) => e.stopPropagation()}
+                className="text-blue-600 hover:underline text-sm font-medium flex items-center"
               >
                 View Source
               </a>
-              <a
-                href={opp.applicationUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
-              >
-                Apply Now
-              </a>
+              {opp.applicationUrl && (
+                <a
+                  href={opp.applicationUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-black text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-800 transition-colors"
+                >
+                  Apply Now
+                </a>
+              )}
             </div>
           </div>
         ))}
