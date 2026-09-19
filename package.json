@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test-sync": "npx tsx src/lambda/sync.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1136.0",

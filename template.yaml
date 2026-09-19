@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Fuko Opportunity Sync Lambda
+
+Parameters:
+  TableName:
+    Type: String
+    Default: FukoOpportunities
+    Description: Existing DynamoDB Table Name
+
+Globals:
+  Function:
+    Timeout: 60
+    Runtime: nodejs20.x
+    Architectures:
+      - arm64
+
+Resources:
+  SyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/lambda/sync.handler
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref TableName
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+      Events:
+        ScheduledSync:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(6 hours)'
+            Name: FukoSyncSchedule
+            Description: Sync Fuko opportunities every 6 hours
+            Enabled: true
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints: 
+          - src/lambda/sync.ts
