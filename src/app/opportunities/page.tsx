@@ -26,18 +26,25 @@ export default function OpportunitiesPage() {
         let oppsToMatch: Opportunity[] = mockOpportunities;
         
         try {
-          const res = await fetch("/api/sync");
+          const res = await fetch("/api/opportunities");
           if (res.ok) {
             const data = await res.json();
             if (data.opportunities && Array.isArray(data.opportunities)) {
-              oppsToMatch = data.opportunities;
+              // Only override if we actually get opportunities back
+              if (data.opportunities.length > 0) {
+                oppsToMatch = data.opportunities;
+              } else {
+                // If the DB is empty, try to sync or just fallback
+                // For now just warn that it's empty and fallback
+                console.warn("DB is empty, using fallback");
+              }
             }
           } else {
-            console.warn("API sync failed, falling back to local data");
+            console.warn("API fetch failed, falling back to local data");
             setError("Failed to fetch latest opportunities. Showing local data.");
           }
         } catch (apiError) {
-          console.warn("API sync error, falling back to local data", apiError);
+          console.warn("API fetch error, falling back to local data", apiError);
           setError("Failed to connect to server. Showing local data.");
         }
 
