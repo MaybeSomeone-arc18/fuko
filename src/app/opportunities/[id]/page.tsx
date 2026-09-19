@@ -169,8 +169,13 @@ export default function OpportunityDetail({ params }: { params: Promise<{ id: st
           
           <div className="space-y-6">
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 mb-1 uppercase tracking-wider">Deadline</h3>
-              <p className="text-gray-700 font-medium">{opportunity.deadline || "Rolling / No fixed deadline"}</p>
+              <div className="flex justify-between items-center mb-1">
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Deadline</h3>
+                <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${opportunity.status === 'active' ? 'bg-green-100 text-green-800' : opportunity.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : opportunity.status === 'closed' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                  {opportunity.status === 'active' ? 'Open now' : opportunity.status}
+                </span>
+              </div>
+              <p className="text-gray-700 font-medium">{opportunity.deadline || "Check original source"}</p>
               
               <div className="mt-4 space-y-2">
                 <a 

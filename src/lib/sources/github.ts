@@ -37,15 +37,16 @@ export async function fetchGithubOpportunities(): Promise<Opportunity[]> {
         organization: owner || "Unknown",
         type: "open_source",
         description: issue.body || issue.title,
-        deadline: "", 
+        deadline: null, 
         location: "Remote",
         skills: labels.filter((l: string) => !l.toLowerCase().includes("good first") && !l.toLowerCase().includes("help wanted")),
         interests: ["Open Source"],
         sourceUrl: issue.html_url,
         applicationUrl: issue.html_url,
         sourceType: "github",
-        verifiedAt: new Date().toISOString(),
-        verificationStatus: "verified"
+        lastVerified: new Date().toISOString(),
+        verificationStatus: "verified",
+        status: "active"
       };
     });
   } catch (error) {

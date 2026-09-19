@@ -11,15 +11,17 @@ export interface Opportunity {
   id: string;
   title: string;
   organization: string;
-  type: string;
+  type: string; // e.g., 'internship', 'open_source', 'hackathon'
   description: string;
-  deadline: string;
+  deadline: string | null;
   location: string;
   skills: string[];
   interests: string[];
   sourceUrl: string;
-  applicationUrl: string;
-  sourceType?: string;
+  applicationUrl?: string;
+  sourceType?: "github" | "curated" | "other";
   verifiedAt?: string;
-  verificationStatus?: string;
+  lastVerified?: string;
+  verificationStatus?: "verified" | "unverified";
+  status?: "active" | "upcoming" | "closed" | "recurring";
 }

@@ -16,6 +16,11 @@ function validateCurated(opportunities: Opportunity[]): Opportunity[] {
       continue;
     }
 
+    if (!opp.lastVerified) {
+      console.warn(`Skipping opportunity ${opp.id}: missing lastVerified`);
+      continue;
+    }
+
     // Check if expired
     if (opp.deadline && opp.deadline !== "Rolling" && !isNaN(Date.parse(opp.deadline))) {
       const deadlineDate = new Date(opp.deadline);
