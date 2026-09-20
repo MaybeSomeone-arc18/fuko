@@ -26,7 +26,9 @@ const testOpportunities: Opportunity[] = [
     title: "Type Only Match",
     type: "Hackathon",
     skills: ["Empty"],
-    interests: ["Empty"]
+    interests: ["Empty"],
+    location: "Unknown", // avoid location match
+    eligibility: "Professional" // avoid student match
   },
   {
     ...baseOpp,
@@ -34,7 +36,9 @@ const testOpportunities: Opportunity[] = [
     title: "Skill Match Only",
     type: "Internship",
     skills: ["Python"],
-    interests: ["Empty"]
+    interests: ["Empty"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
@@ -42,7 +46,9 @@ const testOpportunities: Opportunity[] = [
     title: "Interest Match Only",
     type: "Internship",
     skills: ["Empty"],
-    interests: ["AI"]
+    interests: ["AI"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
@@ -50,7 +56,9 @@ const testOpportunities: Opportunity[] = [
     title: "Type and Skill Match",
     type: "Hackathon",
     skills: ["Python"],
-    interests: ["Empty"]
+    interests: ["Empty"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
@@ -58,7 +66,30 @@ const testOpportunities: Opportunity[] = [
     title: "Type and Interest Match",
     type: "Hackathon",
     skills: ["Empty"],
-    interests: ["AI"]
+    interests: ["AI"],
+    location: "Unknown",
+    eligibility: "Professional"
+  },
+  {
+    ...baseOpp,
+    id: "opp-location-only",
+    title: "Location Match Only",
+    type: "Internship",
+    skills: ["Empty"],
+    interests: ["Empty"],
+    location: "New York", // matches profile location exactly
+    eligibility: "Professional"
+  },
+  {
+    ...baseOpp,
+    id: "opp-eligibility-only",
+    title: "Eligibility Match Only",
+    type: "Internship",
+    skills: ["Empty"],
+    interests: ["Empty"],
+    location: "Unknown",
+    eligibility: "Student", // matches profile studyYear
+    description: "student role"
   },
   {
     ...baseOpp,
@@ -66,15 +97,19 @@ const testOpportunities: Opportunity[] = [
     title: "Unrelated Opportunity",
     type: "Research",
     skills: ["Ruby"],
-    interests: ["Finance"]
+    interests: ["Finance"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
     id: "opp-norm-hackathon",
     title: "Normalization Hackathon",
     type: "Hackathons",
-    skills: ["Empty"],
-    interests: ["Empty"]
+    skills: ["Python"], // need something to pass the gate since type-only fails
+    interests: ["Empty"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
@@ -82,7 +117,9 @@ const testOpportunities: Opportunity[] = [
     title: "Normalization Open Source",
     type: "Internship",
     skills: ["Empty"],
-    interests: ["Open Source"]
+    interests: ["Open Source"],
+    location: "Unknown",
+    eligibility: "Professional"
   },
   {
     ...baseOpp,
@@ -90,14 +127,16 @@ const testOpportunities: Opportunity[] = [
     title: "Normalization Python",
     type: "Internship",
     skills: ["python"],
-    interests: ["Empty"]
+    interests: ["Empty"],
+    location: "Unknown",
+    eligibility: "Professional"
   }
 ];
 
 const profile: UserProfile = {
   education: "CS",
-  studyYear: "3",
-  location: "Remote",
+  studyYear: "3", // Triggers student eligibility match
+  location: "New York",
   skills: ["Python"],
   interests: ["AI", "opensource"],
   opportunityTypes: ["Hackathon"]
@@ -107,7 +146,9 @@ console.log("=== Matching Algorithm Tests ===");
 console.log("Profile Preferences:", {
   types: profile.opportunityTypes,
   skills: profile.skills,
-  interests: profile.interests
+  interests: profile.interests,
+  location: profile.location,
+  studyYear: profile.studyYear
 });
 
 const matched = matchOpportunities(profile, testOpportunities);
@@ -120,6 +161,7 @@ matched.forEach((opp, index) => {
 
 // Verification assertions
 const getScore = (id: string) => matched.find(o => o.id === id)?.score || 0;
+const isIncluded = (id: string) => matched.some(o => o.id === id);
 
 const assert = (condition: boolean, message: string) => {
   if (!condition) {
@@ -132,44 +174,30 @@ const assert = (condition: boolean, message: string) => {
 
 console.log("\nAssertions:");
 
+// Exclusions
+assert(!isIncluded("opp-type-only"), "Type-only = excluded from For You feed");
+assert(!isIncluded("opp-unrelated"), "Unrelated = excluded from For You feed");
+
+// Inclusions (Passed the gate)
+assert(isIncluded("opp-skill-only"), "Skill-only = included");
+assert(isIncluded("opp-interest-only"), "Interest-only = included");
+assert(isIncluded("opp-type-skill"), "Type + Skill = included");
+assert(isIncluded("opp-type-interest"), "Type + Interest = included");
+assert(isIncluded("opp-location-only"), "Explicit location match = included");
+assert(isIncluded("opp-eligibility-only"), "Explicit eligibility/education match = included");
+
+// Boosting
 assert(
-  matched.length === 8,
-  "Should return exactly 8 opportunities (unrelated is filtered out)"
+  getScore("opp-type-skill") > getScore("opp-skill-only"),
+  "Type preference still boosts ranking after qualification"
 );
 
+// Normalization
 assert(
-  getScore("opp-type-skill") > getScore("opp-type-only"),
-  "Type + Skill should score higher than Type-only"
+  isIncluded("opp-norm-hackathon") && getScore("opp-norm-hackathon") > getScore("opp-skill-only"),
+  "Normalization still works: 'Hackathon' boosts 'Hackathons'"
 );
-
-assert(
-  getScore("opp-skill-only") > getScore("opp-type-only"),
-  "Skill-only match should score higher than Type-only match"
-);
-
-assert(
-  getScore("opp-interest-only") > getScore("opp-type-only"),
-  "Interest-only match should score higher than Type-only match"
-);
-
-assert(
-  getScore("opp-unrelated") === 0,
-  "Unrelated opportunity should not be matched at all"
-);
-
-assert(
-  getScore("opp-norm-hackathon") > 0,
-  "Should match 'Hackathon' profile preference with 'Hackathons' opportunity type"
-);
-
-assert(
-  getScore("opp-norm-opensource") > 0,
-  "Should match 'opensource' profile interest with 'Open Source' opportunity interest"
-);
-
-assert(
-  getScore("opp-norm-python") > 0,
-  "Should match 'Python' profile skill with 'python' opportunity skill"
-);
+assert(isIncluded("opp-norm-opensource"), "Normalization still works: 'opensource' matches 'Open Source'");
+assert(isIncluded("opp-norm-python"), "Normalization still works: 'Python' matches 'python'");
 
 console.log("\nAll matching tests passed!");

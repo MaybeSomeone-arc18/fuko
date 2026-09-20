@@ -26,8 +26,7 @@ export function matchOpportunities(
   profile: UserProfile,
   opportunities: Opportunity[]
 ): MatchedOpportunity[] {
-  // Must match at least one strong signal (Type=20, Skill=30, Interest=30)
-  const MIN_STRONG_SCORE = 20;
+
 
   return opportunities
     .map((opp) => {
@@ -94,8 +93,16 @@ export function matchOpportunities(
         weakScore += 5;
       }
 
-      // Must have at least one STRONG match to appear
-      if (strongScore >= MIN_STRONG_SCORE) {
+      // Relevance gate
+      let hasRelevanceGatePassed = false;
+      
+      if (matchedSkills.length > 0) hasRelevanceGatePassed = true;
+      if (matchedInterests.length > 0) hasRelevanceGatePassed = true;
+      if (matchesLocation && !isRemote) hasRelevanceGatePassed = true;
+      if (isStudentRole && profile.studyYear) hasRelevanceGatePassed = true;
+
+      // Must have at least ONE meaningful profile-specific signal to qualify
+      if (hasRelevanceGatePassed) {
         const totalScore = strongScore + weakScore;
         return {
           ...opp,

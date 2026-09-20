@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function OpportunitiesPage() {
   const router = useRouter();
   const [opportunities, setOpportunities] = useState<MatchedOpportunity[]>([]);
-  const [showAll, setShowAll] = useState(false);
+  const [displayCount, setDisplayCount] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +58,7 @@ export default function OpportunitiesPage() {
     return <div className="max-w-4xl mx-auto p-6 font-medium">Loading opportunities...</div>;
   }
 
-  const displayedOpportunities = showAll ? opportunities : opportunities.slice(0, 5);
+  const displayedOpportunities = opportunities.slice(0, displayCount);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -74,7 +74,7 @@ export default function OpportunitiesPage() {
         </Link>
       </div>
 
-      {!showAll && opportunities.length > 0 && (
+      {displayCount === 5 && opportunities.length > 0 && (
         <h2 className="text-2xl font-bold mb-6">For You</h2>
       )}
 
@@ -156,23 +156,14 @@ export default function OpportunitiesPage() {
         )}
       </div>
       
-      {opportunities.length > 5 && (
+      {opportunities.length > displayCount && (
         <div className="mt-8 text-center">
-          {!showAll ? (
-            <button
-              onClick={() => setShowAll(true)}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-            >
-              Explore all ({opportunities.length - 5} more)
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowAll(false)}
-              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-            >
-              Show less
-            </button>
-          )}
+          <button
+            onClick={() => setDisplayCount((prev) => prev + 5)}
+            className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+          >
+            Show 5 more
+          </button>
         </div>
       )}
       
