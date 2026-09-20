@@ -1,50 +1,147 @@
-# Fuko
+# [Fuko](https://main.d2punv4aorsj85.amplifyapp.com/)
 
-Fuko is a modern web application built using [Next.js](https://nextjs.org), designed for matching and aggregating opportunities in real-time. It features a progressive matching relevance engine, profile-aware feeds, and integrates deeply with AWS DynamoDB for its data layer.
+**Focused Opportunities, built for clarity.**
 
-## Technologies Used
+Fuko ingests open opportunities (GitHub issues, bounties, hackathons, competitions) and returns only the ones that match a user's real profile. Instead of a searchable list, it produces a small ranked set, each result annotated with the signals that produced the match.
 
-- **Framework:** Next.js 16 (App Router)
-- **Styling:** Tailwind CSS 4
-- **Animations:** Framer Motion
-- **Database:** AWS DynamoDB (using `@aws-sdk/client-dynamodb` and `@aws-sdk/lib-dynamodb`)
-- **Language:** TypeScript
+<p>
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-000?logo=next.js&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white">
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="AWS" src="https://img.shields.io/badge/AWS-232F3E?logo=amazonaws&logoColor=white">
+  <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-black">
+</p>
 
-## Latest Changes
+---
 
-The recent development has focused on enhancing the opportunity matching engine and improving the feed experience:
+## Core principle
 
-- **Progressive Loading & Relevance Gates:** Implemented a matching relevance gate and progressive loading mechanisms for smoother user experience.
-- **Feed Presentation:** Improved feed presentation and normalized matching algorithms.
-- **DynamoDB Enhancements:** Enforced explicit AWS region for DynamoDB and improved data layer stability.
-- **Opportunity Sources:** Froze live opportunity sources and made opportunity matching profile-aware.
+Most platforms index everything and rely on filters. Fuko inverts that: an opportunity is shown only when it matches the profile.
 
-## Getting Started
+> **Opportunity type is a preference, not a relevance signal.**
 
-First, ensure you have the required environment variables set up (see `.env.local.example`).
+Selecting "Hackathon" records intent. It does not qualify every hackathon. Type can raise ranking, but a match requires at least one concrete profile signal: a skill, an interest, or a location. Results that rely on type alone are excluded. Every reason shown maps to a real matched field.
 
-Then, run the development server:
+---
+
+## Two streams
+
+Opportunities are classified by engagement model, not by source:
+
+- **Contribute:** remote, skill-based work such as GitHub issues, bounties, and contribution campaigns. Ranked by skill and tech overlap. Location is ignored.
+- **Near you:** in-person events such as hackathons, meetups, and college competitions. Ranked by location first, then interest.
+
+---
+
+## Matching engine
+
+- **Relevance gate.** An opportunity qualifies only with at least one concrete signal (matched skill, interest, or location). Type-only matches are dropped.
+- **Token-accurate comparison.** Matching runs on whole tokens with safe normalization. `cli` does not match `client`, and acronyms such as `CSS`, `AWS`, and `iOS` are preserved.
+- **Metadata enrichment.** GitHub opportunities are enriched with each repository's real languages and topics, so a reason like `Matched on TypeScript · Python` reflects the actual stack. Nothing is inferred from titles or descriptions.
+- **Deterministic reveal.** Results load five at a time with true counts. If three qualify, three are shown. If none qualify, the feed returns an explicit empty state.
+
+---
+
+## Design
+
+- Three themes: Light, Dark, and Funky. Light and Dark are minimal; Funky adds color and motion.
+- Spring-based interactions, including a "considering" transition that renders the ranking pass before results resolve.
+- All motion respects `prefers-reduced-motion`.
+
+---
+
+## Tech stack
+
+| Layer | Stack |
+|---|---|
+| Frontend | Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion |
+| Data and sync | AWS DynamoDB, Lambda, SAM (automated opportunity sync) |
+| Sources | GitHub (issues, contribution campaigns), [Brabble.ai](https://brabble.ai) (events) |
+
+---
+
+## Getting started
+
+Prerequisites: Node.js 18+ and npm.
 
 ```bash
+git clone https://github.com/MaybeSomeone-arc18/fuko.git
+cd fuko
+npm install
+cp .env.local.example .env.local   # set the values below
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+Open [http://localhost:3000](http://localhost:3000).
 
-## Available Scripts
+For local development without AWS, set `USE_MOCK_DB=true` to use an in-memory store.
 
-- `npm run dev`: Starts the Next.js development server.
-- `npm run build`: Builds the app for production.
-- `npm run start`: Starts the production server.
-- `npm run lint`: Runs ESLint to check for code issues.
-- `npm run test-sync`: Runs the data synchronization Lambda script.
-- `npm run test-brabble`: Tests the Brabble source fetcher.
-- `npm run test-sources`: Tests all integrated sources.
-- `npm run reset-opportunities`: Resets the opportunity data in DynamoDB (ap-south-1 region).
-- `npm run reset-opportunities:dry`: Dry-run for resetting opportunity data.
+### Environment variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `GITHUB_TOKEN` | Raises the GitHub API rate limit for enriching opportunities with repo languages and topics. A classic token with no scopes (or `public_repo`) is enough. | none |
+| `DYNAMODB_REGION` | AWS region for the opportunities table. | `ap-south-1` |
+| `DYNAMODB_TABLE_NAME` | DynamoDB table name. | `FukoOpportunities` |
+| `USE_MOCK_DB` | Set to `true` to bypass AWS and use an in-memory store. | `false` |
+
+---
+
+## Data and enrichment
+
+Opportunities sync from their sources into DynamoDB. A backfill script enriches GitHub records with real technology signals (languages and topics), which makes skill matching structural rather than keyword-based:
+
+```bash
+npx tsx --env-file=.env.local scripts/enrich-github.ts
+```
+
+Enrichment is resumable and non-destructive: it writes only on a successful fetch and skips records that already have data.
+
+---
+
+## Project structure
+
+```
+src/
+├── app/
+│   ├── page.tsx              # Landing
+│   ├── profile/              # Onboarding (intent vs. identity)
+│   ├── opportunities/        # The feed (Contribute / Near you)
+│   │   └── [id]/             # Opportunity detail
+│   ├── about/                # Product overview
+│   └── components/           # Shared UI
+├── lib/
+│   ├── matching.ts           # Relevance gate and ranking
+│   ├── motion.ts             # Spring presets and motion variants
+│   ├── theme.tsx             # Light / Dark / Funky
+│   ├── db/                   # DynamoDB access
+│   └── sources/              # GitHub and Brabble adapters
+└── scripts/                  # Enrichment and sync tooling
+```
+
+---
+
+## Roadmap
+
+**In progress**
+- [ ] **Editable profiles:** change saved skills, interests, and location anytime; the feed re-resolves live.
+- [ ] **Deeper taxonomy:** more skills, topics, and opportunity types for precise profiles.
+- [ ] **Dynamic Funky theme:** richer motion and reactive elements.
+- [ ] **Ongoing UI refinement** across all surfaces.
+
+**Planned**
+- [ ] **Google sign-in** with a full guest mode.
+- [ ] **Encrypted, portable profiles.**
+- [ ] **Saved opportunities and deadline reminders.**
+- [ ] **More sources:** GitLab, Devpost, Unstop.
+- [ ] **Richer event data:** themes and tracks so "Near you" ranks on interest, not location alone.
+
+**Exploring**
+- [ ] Ranking that adapts to saves and skips.
+- [ ] A weekly digest of newly matching opportunities.
+
+---
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
