@@ -7,7 +7,7 @@ const memoryStore: Opportunity[] = [];
 
 // Initialize DynamoDB Client
 // We assume AWS CLI is configured locally or IAM roles are present in production
-const region = process.env.AWS_REGION || "ap-south-1";
+const region = process.env.DYNAMODB_REGION || "ap-south-1";
 const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME || "FukoOpportunities";
 
 // Set to true by default to attempt DB connection
