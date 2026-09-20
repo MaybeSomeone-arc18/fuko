@@ -83,16 +83,55 @@ export async function fetchGithubOpportunities(): Promise<Opportunity[]> {
       const repoParts = repoUrl.split('/');
       repoParts.pop();
       const owner = repoParts.pop();
-      
-      const issueLabels = issue.labels.map(l => l.name);
-      
-      const skillsAndInterests = new Set<string>();
-      issueLabels.forEach((l: string) => {
-        const lower = l.toLowerCase();
-        if (!lower.includes("good first") && !lower.includes("help wanted")) {
-          skillsAndInterests.add(l);
+      const repo = repoParts.pop();
+
+      // Fetch languages and topics
+      let newSkills: string[] = [];
+      let newInterests: string[] = [];
+
+      if (owner && repo) {
+        try {
+          const [langRes, topicsRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${owner}/${repo}/languages`, { headers }),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/topics`, { headers })
+          ]);
+          apiRequests += 2;
+          
+          if (langRes.ok) {
+            const langs = await langRes.json();
+            newSkills = Object.keys(langs);
+          } else {
+            apiErrors++;
+          }
+          
+          if (topicsRes.ok) {
+            const topicsData = await topicsRes.json();
+            newInterests = topicsData.names || [];
+          } else {
+            apiErrors++;
+          }
+        } catch (err) {
+          console.error(`Error enriching ${owner}/${repo}:`, err);
+          apiErrors++;
         }
-      });
+      }
+
+      function safeDepluralize(s: string): string {
+        const exceptions = new Set(["css", "aws", "ios", "k8s", "js", "ts", "saas", "paas", "iaas"]);
+        if (exceptions.has(s)) return s;
+        if (s.endsWith("ss")) return s;
+        if (s.endsWith("ies")) return s.slice(0, -3) + "y";
+        if (s.endsWith("s") && s.length > 3) return s.slice(0, -1);
+        return s;
+      }
+      
+      function normalizeTag(str: string): string {
+        if (!str) return "";
+        return safeDepluralize(str.toLowerCase().replace(/[^a-z0-9]+/g, ''));
+      }
+      
+      const enrichedSkills = new Set(newSkills.map(normalizeTag).filter(Boolean));
+      const enrichedInterests = new Set(newInterests.map(normalizeTag).filter(Boolean));
 
       opportunities.push({
         id: `gh-${issue.id}`,
@@ -104,8 +143,8 @@ export async function fetchGithubOpportunities(): Promise<Opportunity[]> {
         deadline: null, 
         location: "Remote",
         eligibility: "",
-        skills: Array.from(skillsAndInterests),
-        interests: ["Open Source"],
+        skills: Array.from(enrichedSkills),
+        interests: Array.from(enrichedInterests),
         sourceUrl: issue.html_url,
         applicationUrl: issue.html_url,
         sourceType: "github",

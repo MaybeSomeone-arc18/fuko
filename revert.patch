@@ -1,0 +1,542 @@
+--- src/app/profile/page.tsx	2026-09-20
++++ src/app/profile/page.tsx	2026-09-20
+@@ -7,7 +7,7 @@
+ import { spring, useSafeSpring } from "../../lib/motion";
+ import { UserProfile } from "../../types";
+ import { useTheme } from "../../lib/theme";
+-import { useConfettiBurst } from "../components/ConfettiBurst";
++import { useConfettiBurst } from "@/app/components/ConfettiBurst";
+ 
+ const INTENT_OPTIONS = [
+   { label: "Open Source", value: "open_source" },
+@@ -36,16 +36,16 @@
+   { label: "Hacktoberfest", value: "hacktoberfest" }
+ ];
+ 
+-function TactileChip({ 
+-  label, 
+-  selected, 
+-  onClick, 
++function TactileChip({
++  label,
++  selected,
++  onClick,
+   accent = false,
+   funky = false,
+   funkyColor,
+-}: { 
+-  label: string; 
+-  selected: boolean; 
++}: {
++  label: string;
++  selected: boolean;
+   onClick: () => void;
+   accent?: boolean;
+   funky?: boolean;
+@@ -52,6 +52,6 @@
+ }) {
+   const safeSnappy = useSafeSpring(spring.snappy);
+-  
++
+   return (
+     <motion.button
+       whileTap={{ scale: funky ? 0.85 : 0.94 }}
+@@ -58,15 +58,10 @@
+       transition={safeSnappy}
+       onClick={onClick}
+-      className={`px-4 py-2 rounded-full border text-body font-medium transition-colors funky-chip-selected ${
+-        selected 
+-          ? accent 
+-            ? "border-accent bg-accent text-accent-ink" 
+-            : "border-ink bg-ink text-paper"
+-          : "border-line bg-surface text-ink hover:bg-surface-sunk"
+-      }`}
+-      style={funky && selected && funkyColor ? { borderColor: funkyColor, backgroundColor: funkyColor, color: "#fff" } : {}}
+-    >
+-      {label}
++      className={`px-4 py-2 rounded-full border text-body font-medium
++${accent ? "border-ink bg-surface" : "border-line bg-surface"}
++text-ink hover:bg-accent/5 focus:outline-none focus:border-ink transition-colors`}
++    >
++      <span className="text-small">{label}</span>
+     </motion.button>
+   );
+ }
+@@ -73,270 +73,223 @@
+-export default function ProfilePage() {
++export default function Profile() {
+   const router = useRouter();
+-  const [step, setStep] = useState(1);
+-  const [profile, setProfile] = useState<Partial<UserProfile>>({
+-    education: "",
+-    studyYear: "",
+-    location: "",
++  const [profile, setProfile] = useState<UserProfile>({
++    opportunityTypes: [],
+     skills: [],
+     interests: [],
+-    opportunityTypes: [],
++    location: "",
++    education: "",
++    studyYear: ""
+   });
+-  const [isMounted, setIsMounted] = useState(false);
+-  
+-  const safeGentle = useSafeSpring(spring.gentle);
++  const [activeStep, setActiveStep] = useState(0);
++  const [isSubmitting, setIsSubmitting] = useState(false);
+   const { theme } = useTheme();
+-  const isFunky = theme === "funky";
+-  const fireBurst = useConfettiBurst();
+-
+-  const FUNKY_CHIP_COLORS = ["#FF5C48", "#3FD07A", "#4C8DFF", "#F5C518"];
++  const { burst } = useConfettiBurst();
++
++  const steps = [
++    {
++      title: "What excites you?",
++      description: "Pick opportunities that spark your curiosity.",
++      options: INTENT_OPTIONS,
++      value: "opportunityTypes",
++      multiSelect: true,
++      minSelections: 1
++    },
++    {
++      title: "What's your stack?",
++      description: "Select skills you enjoy working with.",
++      options: SKILL_OPTIONS,
++      value: "skills",
++      multiSelect: true,
++      minSelections: 1
++    },
++    {
++      title: "What interests you?",
++      description: "Choose domains you want to explore.",
++      options: INTEREST_OPTIONS,
++      value: "interests",
++      multiSelect: true,
++      minSelections: 1
++    },
++    {
++      title: "The basics.",
++      description: "Add your location to unlock the \"Near you\" feed.",
++      fields: [
++        {
++          label: "Location",
++          placeholder: "e.g. Bangalore, Remote",
++          value: profile.location,
++          onChange: (e) => setProfile(p => ({ ...p, location: e.target.value }))
++        }
++      ]
++    }
++  ];
++
++  const handleComplete = () => {
++    setIsSubmitting(true);
++    // Simulate API call
++    setTimeout(() => {
++      localStorage.setItem("fukoProfile", JSON.stringify(profile));
++      burst();
++      setIsSubmitting(false);
++      router.push("/");
++    }, 1000);
++  };
++
++  const safeGentle = useSafeSpring(spring.gentle);
++  const progress = (activeStep + 1) / steps.length;
+ 
+   useEffect(() => {
+-    setIsMounted(true);
+-    const saved = localStorage.getItem("fuko:profile");
++    const saved = localStorage.getItem("fukoProfile");
+     if (saved) {
+-      try {
+-        setProfile(JSON.parse(saved));
+-      } catch (e) {
+-        console.error(e);
+-      }
++      setProfile(JSON.parse(saved));
+     }
+   }, []);
+ 
+-  if (!isMounted) return null;
+-
+-  const toggleArray = (key: keyof UserProfile, value: string) => {
+-    setProfile(prev => {
+-      const arr = (prev[key] as string[]) || [];
+-      const newArr = arr.includes(value) 
+-        ? arr.filter(v => v !== value)
+-        : [...arr, value];
+-      return { ...prev, [key]: newArr };
+-    });
+-  };
+-
+-  const nextStep = () => setStep(s => s + 1);
+-  const prevStep = () => setStep(s => Math.max(1, s - 1));
+-
+-  const handleComplete = () => {
+-    const finalProfile: UserProfile = {
+-      education: profile.education || "",
+-      studyYear: profile.studyYear || "",
+-      location: profile.location || "",
+-      skills: profile.skills || [],
+-      interests: profile.interests || [],
+-      opportunityTypes: profile.opportunityTypes || [],
+-    };
+-    localStorage.setItem("fuko:profile", JSON.stringify(finalProfile));
+-    if (isFunky) fireBurst();
+-    setTimeout(() => router.push("/opportunities"), isFunky ? 600 : 0);
+-  };
+-
+-  const hasMeaningfulIdentity = (profile.skills && profile.skills.length > 0) || (profile.interests && profile.interests.length > 0);
+-
+-  return (
+-    <div className="max-w-2xl mx-auto px-6 py-24 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
++  return (
++    <motion.div
++      initial={{ opacity: 0 }}
++      animate={{ opacity: 1 }}
++      exit={{ opacity: 0 }}
++      className="min-h-screen bg-gradient-to-b from-surface via-surface/50 to-surface py-12 px-4"
++    >
+       <AnimatePresence mode="wait">
+-        {step === 1 && (
+-          <motion.div
+-            key="step1"
+-            initial={{ opacity: 0, y: 10 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            exit={{ opacity: 0, y: -10 }}
+-            transition={safeGentle}
+-            className="flex flex-col gap-12"
+-          >
+-            <div>
+-              <h1 className="text-h1 font-medium tracking-h1 mb-4">What you want.</h1>
+-              <p className="text-body text-ink-soft">Select the types of opportunities you are looking for.</p>
+-            </div>
+-            
+-            <div className="flex flex-wrap gap-3">
+-              {INTENT_OPTIONS.map((opt, i) => (
+-                <TactileChip 
+-                  key={opt.value}
+-                  label={opt.label}
+-                  selected={(profile.opportunityTypes || []).includes(opt.value)}
+-                  onClick={() => toggleArray("opportunityTypes", opt.value)}
+-                  accent={false}
+-                  funky={isFunky}
+-                  funkyColor={FUNKY_CHIP_COLORS[i % 4]}
+-                />
+-              ))}
+-            </div>
+-
+-            <div className="mt-8 flex justify-end">
+-              <button 
+-                onClick={nextStep}
+-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
+-              >
+-                Continue
+-              </button>
+-            </div>
+-          </motion.div>
+-        )}
+-
+-        {step === 2 && (
+-          <motion.div
+-            key="step2"
+-            initial={{ opacity: 0, y: 10 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            exit={{ opacity: 0, y: -10 }}
+-            transition={safeGentle}
+-            className="flex flex-col gap-12"
+-          >
+-            <div>
+-              <h1 className="text-h1 font-medium tracking-h1 mb-4">Who you are.</h1>
+-              <p className="text-body text-ink-soft">Fuko shows fewer, better matches — not everything. Your skills are the strongest signal we use.</p>
+-            </div>
+-            
+-            <div className="flex flex-wrap gap-3">
+-              {SKILL_OPTIONS.map((opt, i) => (
+-                <TactileChip 
+-                  key={opt.value}
+-                  label={opt.label}
+-                  selected={(profile.skills || []).includes(opt.value)}
+-                  onClick={() => toggleArray("skills", opt.value)}
+-                  accent={!isFunky}
+-                  funky={isFunky}
+-                  funkyColor={FUNKY_CHIP_COLORS[i % 4]}
+-                />
+-              ))}
+-            </div>
+-
+-            <div className="mt-8 flex justify-between">
+-              <button 
+-                onClick={prevStep}
+-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+-              >
+-                Back
+-              </button>
+-              <button 
+-                onClick={nextStep}
+-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
+-              >
+-                Continue
+-              </button>
+-            </div>
+-          </motion.div>
+-        )}
+-
+-        {step === 3 && (
+-          <motion.div
+-            key="step3"
+-            initial={{ opacity: 0, y: 10 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            exit={{ opacity: 0, y: -10 }}
+-            transition={safeGentle}
+-            className="flex flex-col gap-12"
+-          >
+-            <div>
+-              <h1 className="text-h1 font-medium tracking-h1 mb-4">What you care about.</h1>
+-              <p className="text-body text-ink-soft">Pick a few domains you want to explore.</p>
+-            </div>
+-            
+-            <div className="flex flex-wrap gap-3">
+-              {INTEREST_OPTIONS.map((opt, i) => (
+-                <TactileChip 
+-                  key={opt.value}
+-                  label={opt.label}
+-                  selected={(profile.interests || []).includes(opt.value)}
+-                  onClick={() => toggleArray("interests", opt.value)}
+-                  accent={!isFunky}
+-                  funky={isFunky}
+-                  funkyColor={FUNKY_CHIP_COLORS[(i + 2) % 4]}
+-                />
+-              ))}
+-            </div>
+-
+-            <div className="mt-8 flex justify-between">
+-              <button 
+-                onClick={prevStep}
+-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+-              >
+-                Back
+-              </button>
+-              <button 
+-                onClick={nextStep}
+-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
+-              >
+-                Continue
+-              </button>
+-            </div>
+-          </motion.div>
+-        )}
+-
+-        {step === 4 && (
+-          <motion.div
+-            key="step4"
+-            initial={{ opacity: 0, y: 10 }}
+-            animate={{ opacity: 1, y: 0 }}
+-            exit={{ opacity: 0, y: -10 }}
+-            transition={safeGentle}
+-            className="flex flex-col gap-12"
+-          >
+-            <div>
+-              <h1 className="text-h1 font-medium tracking-h1 mb-4">The basics.</h1>
+-              <p className="text-body text-ink-soft">Add your location to unlock the &quot;Near you&quot; feed, plus optional details for student roles.</p>
+-            </div>
+-            
+-            <div className="flex flex-col gap-6 max-w-sm">
+-              <label className="flex flex-col gap-2">
+-                <span className="text-small font-medium text-ink-soft">Location</span>
+-                <input 
+-                  type="text" 
+-                  value={profile.location || ""}
+-                  onChange={e => setProfile(p => ({ ...p, location: e.target.value }))}
+-                  placeholder="e.g. Bangalore, Remote"
+-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+-                />
+-              </label>
+-              
+-              <label className="flex flex-col gap-2">
+-                <span className="text-small font-medium text-ink-soft">Education</span>
+-                <input 
+-                  type="text" 
+-                  value={profile.education || ""}
+-                  onChange={e => setProfile(p => ({ ...p, education: e.target.value }))}
+-                  placeholder="e.g. BITS Pilani"
+-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+-                />
+-              </label>
+-
+-              <label className="flex flex-col gap-2">
+-                <span className="text-small font-medium text-ink-soft">Study Year</span>
+-                <input 
+-                  type="text" 
+-                  value={profile.studyYear || ""}
+-                  onChange={e => setProfile(p => ({ ...p, studyYear: e.target.value }))}
+-                  placeholder="e.g. 3"
+-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+-                />
+-              </label>
+-            </div>
+-
+-            <div className="mt-8 flex justify-between">
+-              <button 
+-                onClick={prevStep}
+-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+-              >
+-                Back
+-              </button>
+-              <button 
+-                onClick={hasMeaningfulIdentity ? handleComplete : undefined}
+-                className={`h-12 px-8 rounded-full text-body font-medium transition-transform ${
+-                  hasMeaningfulIdentity
+-                    ? "bg-accent text-accent-ink hover:scale-[0.98] active:scale-95"
+-                    : "bg-surface-sunk text-ink-faint cursor-not-allowed"
+-                }`}
+-                title={hasMeaningfulIdentity ? "" : "Select at least one skill or interest to continue"}
+-              >
+-                Show my feed
+-              </button>
+-            </div>
+-          </motion.div>
+-        )}
++        <motion.div
++          key={activeStep}
++          initial={{ opacity: 0, y: 20 }}
++          animate={{ opacity: 1, y: 0 }}
++          exit={{ opacity: 0, y: -10 }}
++          transition={safeGentle}
++          className="flex flex-col gap-12"
++        >
++          {activeStep < steps.length ? (
++            <>
++              <div className="flex w-full items-center justify-between px-6">
++                <div className="flex-1">
++                  <h1 className="text-h1 font-medium tracking-h1 mb-2">
++                    {steps[activeStep].title}
++                  </h1>
++                  <p className="text-body text-ink-soft max-w-xl">
++                    {steps[activeStep].description}
++                  </p>
++                </div>
++                <div className="flex-1 flex items-end justify-end">
++                  <motion.button
++                    whileTap={{ scale: 0.9 }}
++                    disabled={isSubmitting}
++                    onClick={() => {
++                      if (activeStep > 0) setActiveStep(activeStep - 1);
++                    }}
++                    className={`w-12 h-12 rounded-full border border-line bg-surface
++                    text-ink hover:bg-accent/5 focus:outline-none focus:border-ink
++                    transition-colors`}
++                  >
++                    <svg
++                      className="w-5 h-5 text-ink"
++                      viewBox="0 0 24 24"
++                      fill="none"
++                      stroke="currentColor"
++                      strokeWidth={2}
++                      strokeLinecap="round"
++                      strokeLinejoin="round"
++                    >
++                      <path d="m15 18-6-6 6-6" />
++                    </svg>
++                  </motion.button>
++                </div>
++              </div>
++
++              {steps[activeStep].options ? (
++                <div className="flex flex-wrap gap-3">
++                  {steps[activeStep].options.map((option) => (
++                    <TactileChip
++                      key={option.value}
++                      label={option.label}
++                      selected={profile[steps[activeStep].value as keyof UserProfile]
++                        ?.includes(option.value) ?? false}
++                      onClick={() => {
++                        setProfile((p) => {
++                          const current = p[steps[activeStep].value as keyof UserProfile] || [];
++                          const isSelected = current.includes(option.value);
++                          const updated = isSelected
++                            ? current.filter((v) => v !== option.value)
++                            : [...current, option.value];
++                          return {
++                            ...p,
++                            [steps[activeStep].value as keyof UserProfile]: updated
++                          };
++                        });
++                      }}
++                      accent={true}
++                      funky={true}
++                      funkyColor="hsl(var(--hue-ink) 80% 60%)"
++                    >
++                    </TactileChip>
++                  ))}
++                </div>
++              ) : (
++                <div className="space-y-6">
++                  {steps[activeStep].fields?.map((field, index) => (
++                    <label key={index} className="flex flex-col gap-2">
++                      <span className="text-small font-medium text-ink-soft">
++                        {field.label}
++                      </span>
++                      <input
++                        type="text"
++                        value={field.value}
++                        onChange={field.onChange}
++                        placeholder={field.placeholder}
++                        className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
++                      />
++                    </label>
++                  ))}
++                </div>
++              )}
++
++              <div className="flex justify-end">
++                <motion.button
++                  whileTap={{ scale: 0.95 }}
++                  disabled={isSubmitting}
++                  onClick={handleComplete}
++                  className={`w-full max-w-xs h-12 px-6 rounded-md border
++                  ${isSubmitting ? "border-line bg-surface/50" : "border-ink bg-ink"}
++                  text-${isSubmitting ? "ink-soft" : "ink"}
++                  hover:${!isSubmitting ? "bg-ink/90" : "bg-surface/50"}
++                  disabled:cursor-not-allowed
++                  transition-colors`}
++                >
++                  {isSubmitting ? "Saving..." : activeStep < steps.length - 1 ? "Next" : "Complete"}
++                </motion.button>
++              </div>
++            </>
++          ) : (
++            <div className="text-center py-20">
++              <div className="w-20 h-20 rounded-full bg-ink/10 flex items-center justify-center mb-6">
++                <svg className="w-10 h-10 text-ink" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
++                  <path d="M22 11.08V12a10 10 0 1 0-5.93-9.14"></path>
++                  <path d="M6.75 15.07a10.11 10.11 0 0 0-1.96 7.63 6.88 6.88 0 0 1 1.09 4.42 3.21 3.21 0 0 0 2.57 2.06"></path>
++                </svg>
++              </div>
++              <h1 className="text-h1 font-medium tracking-h1 mb-4">Welcome aboard!</h1>
++              <p className="text-body text-ink-soft max-w-xl">
++                Your profile is ready. Explore opportunities tailored to your
++                interests and skills.
++              </p>
++              <motion.button
++                whileTap={{ scale: 0.95 }}
++                onClick={() => router.push("/explore")}
++                className="w-full max-w-xs h-12 px-6 rounded-md border border-ink bg-ink text-ink hover:bg-ink/90 focus:outline-none focus:border-ink transition-colors"
++              >
++                Start exploring
++              </motion.button>
++            </div>
++          )}
++        </motion.div>
+       </AnimatePresence>
+-
+-      <div className="absolute bottom-0 left-0 right-0 h-4">
+-        <div className="flex h-full w-1/3 bg-ink transition-all duration-500" style={{ width: `${progress * 100}%` }}></div>
+-      </div>
+-    </motion.div>
++    </div>
+   );
+-}
++}

@@ -1,26 +1,179 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── Light (default) ── */
+:root,
+[data-theme="light"] {
+  --ink: #0A0A0B;
+  --ink-soft: #3F3F46;
+  --ink-faint: #8A8A93;
+  --paper: #FBFBFA;
+  --surface: #FFFFFF;
+  --surface-sunk: #F2F2F0;
+  --line: #EAEAE7;
+
+  --accent: #FF5C48;
+  --accent-ink: #FFFFFF;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 999px;
+
+  --shadow-rest: 0 1px 2px rgba(10, 10, 11, .04), 0 1px 1px rgba(10, 10, 11, .03);
+  --shadow-hover: 0 6px 16px rgba(10, 10, 11, .08), 0 2px 6px rgba(10, 10, 11, .05);
+  --shadow-press: 0 1px 1px rgba(10, 10, 11, .06) inset;
+}
+
+/* ── Dark ── */
+[data-theme="dark"] {
+  --ink: #F4F4F5;
+  --ink-soft: #C4C4CB;
+  --ink-faint: #7A7A85;
+  --paper: #0B0B0C;
+  --surface: #161618;
+  --surface-sunk: #101012;
+  --line: #26262A;
+
+  --accent: #FF5C48;
+  --accent-ink: #FFFFFF;
+}
+
+/* ── Funky ── */
+[data-theme="funky"] {
+  --ink: #16003A;
+  --ink-soft: #3D1070;
+  --ink-faint: #8B5CF6;
+  --paper: #FAF7FF;
+  --surface: #F0E8FF;
+  --surface-sunk: #E5D8FF;
+  --line: #C4A8FF;
+
+  --accent:       #FF5C48; /* coral  — primary action */
+  --accent-ink:   #FFFFFF;
+  --accent-green: #3FD07A;
+  --accent-blue:  #4C8DFF;
+  --accent-amber: #F5C518;
+
+  /* row accent rotation (used via JS index % 4) */
+  --funky-0: #FF5C48;
+  --funky-1: #3FD07A;
+  --funky-2: #4C8DFF;
+  --funky-3: #F5C518;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+
+  --shadow-rest: var(--shadow-rest);
+  --shadow-hover: var(--shadow-hover);
+  --shadow-press: var(--shadow-press);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --text-h1: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h2: 1.375rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.75rem;
+
+  --tracking-display: -0.03em;
+  --tracking-h1: -0.02em;
+  --tracking-h2: -0.015em;
+  --tracking-body: -0.006em;
+  --tracking-caption: 0.02em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), sans-serif;
+}
+
+/* Considering sequence keyframes */
+@keyframes fukoGhostIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fukoShimmer {
+  0%   { opacity: 0.35; }
+  50%  { opacity: 0.6; }
+  100% { opacity: 0.35; }
+}
+
+/* ── Funky-only: blob background keyframes ── */
+@keyframes fukoBlob1 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  33%       { transform: translate(8%, -12%) scale(1.15); }
+  66%       { transform: translate(-6%, 8%) scale(0.9); }
+}
+@keyframes fukoBlob2 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  40%       { transform: translate(-10%, 6%) scale(1.1); }
+  70%       { transform: translate(6%, -8%) scale(0.95); }
+}
+@keyframes fukoBlob3 {
+  0%, 100% { transform: translate(0%, 0%) scale(1); }
+  50%       { transform: translate(5%, 10%) scale(1.08); }
+}
+
+/* Funky wordmark gradient */
+[data-theme="funky"] .funky-wordmark {
+  background: linear-gradient(135deg, #FF5C48, #F5C518, #3FD07A, #4C8DFF);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: funkyGradientShift 4s ease infinite;
+}
+@keyframes funkyGradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Funky row borders — rotate per row via inline CSS var */
+[data-theme="funky"] .funky-row {
+  border-left: 3px solid var(--funky-row-color, #FF5C48);
+  padding-left: 1rem;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Funky chip override */
+[data-theme="funky"] .funky-chip-selected {
+  border-width: 2px;
+  font-weight: 600;
+}
+
+/* Reduced-motion: disable all funky animations */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="funky"] .funky-blob { display: none; }
+  [data-theme="funky"] .funky-wordmark { animation: none; }
+  [data-theme="funky"] .funky-row { border-left-width: 2px; }
 }
