@@ -1,6 +1,6 @@
 # [Fuko](https://main.d2punv4aorsj85.amplifyapp.com/)
 
-**Opportunities, without the search.**
+**Focused Opportunities, without the search.**
 
 Fuko reads every open opportunity — GitHub issues, bounties, hackathons, competitions — and surfaces only the few that genuinely fit *you*. No infinite lists, no filtering through noise. You tell it who you are; it hands you what's worth your attention, each with a reason.
 
