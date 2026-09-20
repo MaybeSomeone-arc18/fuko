@@ -162,7 +162,6 @@ body {
 [data-theme="funky"] .funky-row {
   border-left: 3px solid var(--funky-row-color, #FF5C48);
   padding-left: 1rem;
-  border-radius: 0 8px 8px 0;
 }
 
 /* Funky chip override */

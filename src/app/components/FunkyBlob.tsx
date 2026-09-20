@@ -14,16 +14,16 @@ export function FunkyBlob() {
     <div
       aria-hidden
       className="funky-blob pointer-events-none fixed inset-0 overflow-hidden -z-10"
-      style={{ opacity: 0.18 }}
+      style={{ opacity: 0.06 }}
     >
       {/* Blob 1 — coral */}
       <div
         style={{
           position: "absolute",
-          top: "-10%",
+          top: "-5%",
           left: "-5%",
-          width: "55vw",
-          height: "55vw",
+          width: "40vw",
+          height: "40vw",
           borderRadius: "60% 40% 55% 45% / 50% 60% 40% 50%",
           background: "radial-gradient(circle, #FF5C48 0%, transparent 70%)",
           animation: "fukoBlob1 14s ease-in-out infinite",

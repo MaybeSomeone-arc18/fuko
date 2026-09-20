@@ -129,13 +129,13 @@ export default function OpportunitiesPage() {
   const countToShow = Math.min(currentOpportunities.length, 5);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-24 pt-0 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
+    <div className="max-w-3xl mx-auto px-6 pb-24 pt-16 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
       {error && (
         <div className="mb-12 text-accent text-small">{error}</div>
       )}
 
       {/* Minimal Toggle — always visible */}
-      <div className="mb-16 flex gap-6 border-b border-line pb-4">
+      <div className="mb-10 flex gap-6 border-b border-line pb-4">
         <button
           onClick={() => { setMode("near_you"); setDisplayCount(5); }}
           className={`text-body font-medium transition-colors duration-200 ${mode === "near_you" ? "text-ink" : "text-ink-faint hover:text-ink-soft"}`}
