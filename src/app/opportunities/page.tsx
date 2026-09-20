@@ -9,6 +9,7 @@ import Link from "next/link";
 export default function OpportunitiesPage() {
   const router = useRouter();
   const [opportunities, setOpportunities] = useState<MatchedOpportunity[]>([]);
+  const [showAll, setShowAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,6 +58,8 @@ export default function OpportunitiesPage() {
     return <div className="max-w-4xl mx-auto p-6 font-medium">Loading opportunities...</div>;
   }
 
+  const displayedOpportunities = showAll ? opportunities : opportunities.slice(0, 5);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       {error && (
@@ -71,8 +74,12 @@ export default function OpportunitiesPage() {
         </Link>
       </div>
 
+      {!showAll && opportunities.length > 0 && (
+        <h2 className="text-2xl font-bold mb-6">For You</h2>
+      )}
+
       <div className="grid gap-6">
-        {opportunities.map((opp) => (
+        {displayedOpportunities.map((opp) => (
           <div 
             key={opp.id} 
             onClick={() => router.push(`/opportunities/${encodeURIComponent(opp.id)}`)}
@@ -148,6 +155,26 @@ export default function OpportunitiesPage() {
           </div>
         )}
       </div>
+      
+      {opportunities.length > 5 && (
+        <div className="mt-8 text-center">
+          {!showAll ? (
+            <button
+              onClick={() => setShowAll(true)}
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            >
+              Explore all ({opportunities.length - 5} more)
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAll(false)}
+              className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            >
+              Show less
+            </button>
+          )}
+        </div>
+      )}
       
       <div className="mt-12 text-center text-xs text-gray-400">
         <p>Opportunity data powered partly by Brabble.ai</p>

@@ -5,11 +5,28 @@ export interface MatchedOpportunity extends Opportunity {
   reasons: string[];
 }
 
+function normalize(str: string): string {
+  if (!str) return "";
+  let s = str.toLowerCase().trim();
+  s = s.replace(/[\s-]/g, "");
+  if (s.endsWith("s")) {
+    s = s.slice(0, -1);
+  }
+  return s;
+}
+
+function checkMatch(a: string, b: string): boolean {
+  const normA = normalize(a);
+  const normB = normalize(b);
+  if (!normA || !normB) return false;
+  return normA.includes(normB) || normB.includes(normA);
+}
+
 export function matchOpportunities(
   profile: UserProfile,
   opportunities: Opportunity[]
 ): MatchedOpportunity[] {
-  // Must match at least one strong signal (Type=25, Skill=25, Interest=20)
+  // Must match at least one strong signal (Type=20, Skill=30, Interest=30)
   const MIN_STRONG_SCORE = 20;
 
   return opportunities
@@ -18,30 +35,30 @@ export function matchOpportunities(
       let weakScore = 0;
       const reasons: string[] = [];
 
-      // 1. Opportunity type match (+25)
+      // 1. Opportunity type match (+20)
       const matchesType = profile.opportunityTypes.some((t) =>
-        opp.type.toLowerCase().includes(t.toLowerCase())
+        checkMatch(opp.type, t)
       );
       if (matchesType) {
-        strongScore += 25;
+        strongScore += 20;
         reasons.push(`Matches your preference for ${opp.type} roles`);
       }
 
-      // 2. Skills match (+25)
+      // 2. Skills match (+30)
       const matchedSkills = opp.skills.filter((skill) =>
-        profile.skills.some((ps) => skill.toLowerCase().includes(ps.toLowerCase()) || ps.toLowerCase().includes(skill.toLowerCase()))
+        profile.skills.some((ps) => checkMatch(skill, ps))
       );
       if (matchedSkills.length > 0) {
-        strongScore += 25;
+        strongScore += 30;
         reasons.push(`Matches your ${matchedSkills[0]} skill`);
       }
 
-      // 3. Interests match (+20)
+      // 3. Interests match (+30)
       const matchedInterests = opp.interests.filter((interest) =>
-        profile.interests.some((pi) => interest.toLowerCase().includes(pi.toLowerCase()) || pi.toLowerCase().includes(interest.toLowerCase()))
+        profile.interests.some((pi) => checkMatch(interest, pi))
       );
       if (matchedInterests.length > 0) {
-        strongScore += 20;
+        strongScore += 30;
         reasons.push(`Aligns with your ${matchedInterests[0]} interest`);
       }
 
