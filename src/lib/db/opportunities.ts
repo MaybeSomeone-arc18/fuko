@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, PutCommand, ScanCommand, GetCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 import { Opportunity } from "../../types";
 
 // Fallback memory store
@@ -26,7 +26,10 @@ if (useDatabase) {
 
 export async function saveOpportunities(opportunities: Opportunity[]): Promise<void> {
   if (!ddbDocClient) {
-    console.log("AWS credentials not found, using memory store for saveOpportunities");
+    if (useDatabase) {
+      throw new Error("AWS credentials not found. DB connection is required.");
+    }
+    console.log("Using memory store for saveOpportunities");
     
     // Update memory store (upsert)
     for (const opp of opportunities) {
@@ -59,7 +62,10 @@ export async function saveOpportunities(opportunities: Opportunity[]): Promise<v
 
 export async function getOpportunities(): Promise<Opportunity[]> {
   if (!ddbDocClient) {
-    console.log("AWS credentials not found, using memory store for getOpportunities");
+    if (useDatabase) {
+      throw new Error("AWS credentials not found. DB connection is required.");
+    }
+    console.log("Using memory store for getOpportunities");
     return memoryStore;
   }
 
@@ -71,13 +77,15 @@ export async function getOpportunities(): Promise<Opportunity[]> {
     return (response.Items as Opportunity[]) || [];
   } catch (error) {
     console.error("Error fetching from DynamoDB:", error);
-    // fallback if table doesn't exist etc.
-    return memoryStore;
+    throw error;
   }
 }
 
 export async function getOpportunityById(id: string): Promise<Opportunity | null> {
   if (!ddbDocClient) {
+    if (useDatabase) {
+      throw new Error("AWS credentials not found. DB connection is required.");
+    }
     return memoryStore.find(o => o.id === id) || null;
   }
 
@@ -90,6 +98,33 @@ export async function getOpportunityById(id: string): Promise<Opportunity | null
     return (response.Item as Opportunity) || null;
   } catch (error) {
     console.error(`Error fetching opportunity ${id} from DynamoDB:`, error);
-    return null;
+    throw error;
+  }
+}
+
+export async function deleteAllOpportunities(): Promise<void> {
+  if (!ddbDocClient) {
+    if (useDatabase) {
+      throw new Error("AWS credentials not found. DB connection is required.");
+    }
+    memoryStore.length = 0;
+    return;
+  }
+
+  try {
+    const opportunities = await getOpportunities();
+    const promises = opportunities.map(opp => {
+      const command = new DeleteCommand({
+        TableName: TABLE_NAME,
+        Key: { id: opp.id }
+      });
+      return ddbDocClient!.send(command);
+    });
+    
+    await Promise.all(promises);
+    console.log(`[DB] Deleted ${promises.length} records.`);
+  } catch (error) {
+    console.error("Error deleting all opportunities from DynamoDB:", error);
+    throw error;
   }
 }

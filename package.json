@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test-sync": "npx tsx src/lambda/sync.ts"
+    "test-sync": "npx tsx src/lambda/sync.ts",
+    "test-brabble": "npx tsx src/lib/sources/brabble.ts",
+    "test-sources": "npx -y tsx src/lib/sources/index.ts",
+    "reset-opportunities": "AWS_REGION=ap-south-1 npx -y tsx scripts/reset-opportunity-data.ts",
+    "reset-opportunities:dry": "AWS_REGION=ap-south-1 npx -y tsx scripts/reset-opportunity-data.ts --dry-run"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1136.0",

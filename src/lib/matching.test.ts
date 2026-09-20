@@ -1,7 +1,7 @@
 import { matchOpportunities } from "./matching";
 import { UserProfile, Opportunity } from "../types";
 
-const mockOpportunities: Opportunity[] = [
+const mockOpportunities = [
   {
     id: "1",
     title: "Software Engineering Intern",
@@ -28,7 +28,7 @@ const mockOpportunities: Opportunity[] = [
     sourceUrl: "",
     applicationUrl: ""
   }
-];
+] as unknown as Opportunity[];
 
 function runTests() {
   const profile: UserProfile = {

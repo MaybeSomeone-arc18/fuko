@@ -1,6 +1,6 @@
 import { Opportunity } from "../types";
 
-export const mockOpportunities: Opportunity[] = [
+export const mockOpportunities = ([
   {
     id: "1",
     title: "Software Engineering Intern",
@@ -105,4 +105,4 @@ export const mockOpportunities: Opportunity[] = [
     sourceUrl: "https://example.com/job/8",
     applicationUrl: "https://example.com/apply/8"
   }
-];
+]) as unknown as Opportunity[];

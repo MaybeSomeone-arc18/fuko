@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { mockOpportunities } from "../../data/mockOpportunities";
 import { matchOpportunities, MatchedOpportunity } from "../../lib/matching";
 import { UserProfile, Opportunity } from "../../types";
 import Link from "next/link";
@@ -23,29 +22,22 @@ export default function OpportunitiesPage() {
     const loadData = async () => {
       try {
         const profile: UserProfile = JSON.parse(saved);
-        let oppsToMatch: Opportunity[] = mockOpportunities;
+        let oppsToMatch: Opportunity[] = [];
         
         try {
           const res = await fetch("/api/opportunities");
           if (res.ok) {
             const data = await res.json();
             if (data.opportunities && Array.isArray(data.opportunities)) {
-              // Only override if we actually get opportunities back
-              if (data.opportunities.length > 0) {
-                oppsToMatch = data.opportunities;
-              } else {
-                // If the DB is empty, try to sync or just fallback
-                // For now just warn that it's empty and fallback
-                console.warn("DB is empty, using fallback");
-              }
+              oppsToMatch = data.opportunities;
             }
           } else {
-            console.warn("API fetch failed, falling back to local data");
-            setError("Failed to fetch latest opportunities. Showing local data.");
+            console.warn("API fetch failed");
+            setError("Failed to fetch latest opportunities.");
           }
         } catch (apiError) {
-          console.warn("API fetch error, falling back to local data", apiError);
-          setError("Failed to connect to server. Showing local data.");
+          console.warn("API fetch error", apiError);
+          setError("Failed to connect to server.");
         }
 
         const matched = matchOpportunities(profile, oppsToMatch);
@@ -152,9 +144,13 @@ export default function OpportunitiesPage() {
         ))}
         {opportunities.length === 0 && (
           <div className="text-gray-600 text-center py-12">
-            No opportunities matched your profile. Try updating your skills or interests!
+            No active opportunities found matching your profile. Please check back later!
           </div>
         )}
+      </div>
+      
+      <div className="mt-12 text-center text-xs text-gray-400">
+        <p>Opportunity data powered partly by Brabble.ai</p>
       </div>
     </div>
   );

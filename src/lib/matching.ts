@@ -9,83 +9,85 @@ export function matchOpportunities(
   profile: UserProfile,
   opportunities: Opportunity[]
 ): MatchedOpportunity[] {
-  const MIN_PROFILE_SCORE = 10; // Minimum points from profile-dependent categories to be shown
+  // Must match at least one strong signal (Type=25, Skill=25, Interest=20)
+  const MIN_STRONG_SCORE = 20;
 
   return opportunities
     .map((opp) => {
-      let profileScore = 0;
-      let nonProfileScore = 0;
+      let strongScore = 0;
+      let weakScore = 0;
       const reasons: string[] = [];
 
-      // 1. Opportunity type match (+25) - profile-dependent
+      // 1. Opportunity type match (+25)
       const matchesType = profile.opportunityTypes.some((t) =>
         opp.type.toLowerCase().includes(t.toLowerCase())
       );
       if (matchesType) {
-        profileScore += 25;
+        strongScore += 25;
         reasons.push(`Matches your preference for ${opp.type} roles`);
       }
 
-      // 2. Skills match (+25) - profile-dependent
+      // 2. Skills match (+25)
       const matchedSkills = opp.skills.filter((skill) =>
         profile.skills.some((ps) => skill.toLowerCase().includes(ps.toLowerCase()) || ps.toLowerCase().includes(skill.toLowerCase()))
       );
       if (matchedSkills.length > 0) {
-        profileScore += 25;
+        strongScore += 25;
         reasons.push(`Matches your ${matchedSkills[0]} skill`);
       }
 
-      // 3. Interests match (+20) - profile-dependent
+      // 3. Interests match (+20)
       const matchedInterests = opp.interests.filter((interest) =>
         profile.interests.some((pi) => interest.toLowerCase().includes(pi.toLowerCase()) || pi.toLowerCase().includes(interest.toLowerCase()))
       );
       if (matchedInterests.length > 0) {
-        profileScore += 20;
+        strongScore += 20;
         reasons.push(`Aligns with your ${matchedInterests[0]} interest`);
       }
 
-      // 4. Location match (+15) - split into profile and non-profile
-      const isRemote = opp.location.toLowerCase().includes("remote");
+      // 4. Location match (+15 for direct, remote gives weak score)
+      const isRemote = opp.location.toLowerCase().includes("remote") || opp.location.toLowerCase().includes("online");
       const matchesLocation = profile.location && opp.location.toLowerCase().includes(profile.location.toLowerCase());
-      if (isRemote) {
-        // Remote is non-profile-dependent
-        nonProfileScore += 15;
-        reasons.push("Available remotely");
-      } else if (matchesLocation) {
-        // Non-remote location match is profile-dependent
-        profileScore += 15;
+      
+      if (matchesLocation && !isRemote) {
+        // Direct location match is strong enough to note, but maybe not enough to bypass alone
+        // We'll add it to weak score, but add a reason
+        weakScore += 15;
         reasons.push(`Located near ${profile.location}`);
+      } else if (isRemote) {
+        // Remote is generic, weak signal. No reason generated.
+        weakScore += 10;
       }
 
-      // 5. Student/education eligibility (+10) - profile-dependent
+      // 5. Student eligibility (+10)
       const isStudentRole =
         opp.type.toLowerCase().includes("intern") ||
         opp.type.toLowerCase().includes("co-op") ||
         opp.type.toLowerCase().includes("fellow") ||
-        opp.description.toLowerCase().includes("student");
+        opp.description.toLowerCase().includes("student") ||
+        opp.eligibility?.toLowerCase().includes("student");
 
       if (isStudentRole && profile.studyYear) {
-        profileScore += 10;
-        reasons.push("Suitable for students");
+        // Generic, weak signal
+        weakScore += 10;
       }
 
-      // 6. Deadline exists (+5) - non-profile-dependent
+      // 6. Deadline exists (+5)
       if (opp.deadline) {
-        nonProfileScore += 5;
-        // Don't add a reason for deadline as it's not very personalized
+        weakScore += 5;
       }
 
-      // Only show if we have at least some profile match
-      if (profileScore >= MIN_PROFILE_SCORE) {
-        const totalScore = profileScore + nonProfileScore;
+      // Must have at least one STRONG match to appear
+      if (strongScore >= MIN_STRONG_SCORE) {
+        const totalScore = strongScore + weakScore;
         return {
           ...opp,
           score: totalScore,
           reasons: reasons.slice(0, 4), // Keep max 4 reasons
         };
       }
-      return null; // Will be filtered out
+      return null;
     })
     .filter((opp): opp is MatchedOpportunity => opp !== null)
-    .sort((a, b) => b.score - a.score); // Sort by score descending
+    .sort((a, b) => b.score - a.score);
 }

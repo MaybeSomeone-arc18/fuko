@@ -1,6 +1,6 @@
 import { Opportunity } from "../types";
 
-export const curatedOpportunities: Opportunity[] = [
+export const curatedOpportunities = ([
   {
     "id": "cur-mlh",
     "title": "MLH Fellowship",
@@ -804,4 +804,4 @@ export const curatedOpportunities: Opportunity[] = [
     "status": "recurring",
     "lastVerified": "2026-09-19T17:57:00.353Z"
   }
-];
+]) as unknown as Opportunity[];
