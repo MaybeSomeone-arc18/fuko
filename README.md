@@ -76,7 +76,7 @@ cp .env.local.example .env.local   # fill in the values below
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [fuko.](https://tinyurl.com/fuko-tech).
 
 > For quick local development without AWS, set `USE_MOCK_DB=true` to use an in-memory store.
 
