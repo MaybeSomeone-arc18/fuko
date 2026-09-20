@@ -124,6 +124,7 @@ src/
 ## Roadmap
 
 **In progress**
+- [ ] **Continuous live sync:** the Lambda and EventBridge pipeline is built; wiring enrichment into every scheduled run so opportunities stay current and fully matched.
 - [ ] **Editable profiles:** change saved skills, interests, and location anytime; the feed re-resolves live.
 - [ ] **Deeper taxonomy:** more skills, topics, and opportunity types for precise profiles.
 - [ ] **Dynamic Funky theme:** richer motion and reactive elements.
@@ -139,6 +140,7 @@ src/
 **Exploring**
 - [ ] Ranking that adapts to saves and skips.
 - [ ] A weekly digest of newly matching opportunities.
+
 
 ---
 
