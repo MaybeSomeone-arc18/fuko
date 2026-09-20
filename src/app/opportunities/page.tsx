@@ -129,10 +129,14 @@ export default function OpportunitiesPage() {
   const countToShow = Math.min(currentOpportunities.length, 5);
 
   return (
-    <div className="max-w-3xl mx-auto px-6 pb-24 pt-16 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
+    <div className="max-w-5xl mx-auto px-6 pb-24 pt-8 md:pt-16 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
       {error && (
         <div className="mb-12 text-accent text-small">{error}</div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 relative">
+        {/* Left Column: Feed Content */}
+        <div className="md:col-span-8 flex flex-col">
 
       {/* Minimal Toggle — always visible */}
       <div className="mb-10 flex gap-6 border-b border-line pb-4">
@@ -311,6 +315,51 @@ export default function OpportunitiesPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
+
+      {/* Right Column: Sticky Sidebar Profile Summary */}
+      <div className="md:col-span-4 hidden md:block">
+        <div className="sticky top-28">
+          <div className="bg-surface/30 rounded-2xl p-6 md:p-8 border border-line mb-8">
+            <h2 className="text-small font-medium text-ink mb-5 uppercase tracking-widest">Your Profile</h2>
+            <dl className="space-y-4">
+              {profile.location && (
+                <div>
+                  <dt className="text-caption font-medium text-ink-faint uppercase tracking-wider mb-1">Location</dt>
+                  <dd className="text-small text-ink-soft leading-snug">{profile.location}</dd>
+                </div>
+              )}
+              {profile.skills && profile.skills.length > 0 && (
+                <div>
+                  <dt className="text-caption font-medium text-ink-faint uppercase tracking-wider mb-1">Skills</dt>
+                  <dd className="text-small text-ink-soft leading-snug flex flex-wrap gap-2">
+                    {profile.skills.map((s) => (
+                      <span key={s} className="bg-line/50 px-2 py-0.5 rounded text-xs">{s}</span>
+                    ))}
+                  </dd>
+                </div>
+              )}
+              {profile.interests && profile.interests.length > 0 && (
+                <div>
+                  <dt className="text-caption font-medium text-ink-faint uppercase tracking-wider mb-1">Interests</dt>
+                  <dd className="text-small text-ink-soft leading-snug flex flex-wrap gap-2">
+                    {profile.interests.map((i) => (
+                      <span key={i} className="bg-line/50 px-2 py-0.5 rounded text-xs">{i}</span>
+                    ))}
+                  </dd>
+                </div>
+              )}
+            </dl>
+            <div className="mt-8 pt-6 border-t border-line">
+              <Link href="/profile" className="text-small font-medium text-accent hover:opacity-80 transition-opacity">
+                Edit Profile →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      </div>
     </div>
   );
 }

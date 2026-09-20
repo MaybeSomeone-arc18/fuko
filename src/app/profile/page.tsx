@@ -128,7 +128,7 @@ export default function ProfilePage() {
   const hasMeaningfulIdentity = (profile.skills && profile.skills.length > 0) || (profile.interests && profile.interests.length > 0);
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-24 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
+    <div className="max-w-5xl mx-auto px-6 py-12 md:py-24 min-h-screen bg-paper text-ink font-sans selection:bg-accent selection:text-accent-ink">
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
@@ -137,32 +137,34 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={safeGentle}
-            className="flex flex-col gap-12"
+            className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 relative"
           >
-            <div>
-              <h1 className="text-h1 font-medium tracking-h1 mb-4">What you want.</h1>
+            <div className="md:col-span-5 md:sticky md:top-24 h-fit">
+              <h1 className="text-h1 font-medium tracking-h1 mb-4 text-balance">What you want.</h1>
               <p className="text-body text-ink-soft">Select the types of opportunities you are looking for.</p>
             </div>
             
-            <div className="flex flex-wrap gap-3">
-              {INTENT_OPTIONS.map((opt) => (
-                <TactileChip 
-                  key={opt.value}
-                  label={opt.label}
-                  selected={(profile.opportunityTypes || []).includes(opt.value)}
-                  onClick={() => toggleArray("opportunityTypes", opt.value)}
-                  accent={false}
-                />
-              ))}
-            </div>
+            <div className="md:col-span-7 flex flex-col">
+              <div className="flex flex-wrap gap-3 mb-16">
+                {INTENT_OPTIONS.map((opt) => (
+                  <TactileChip 
+                    key={opt.value}
+                    label={opt.label}
+                    selected={(profile.opportunityTypes || []).includes(opt.value)}
+                    onClick={() => toggleArray("opportunityTypes", opt.value)}
+                    accent={false}
+                  />
+                ))}
+              </div>
 
-            <div className="mt-8 flex justify-end">
-              <button 
-                onClick={nextStep}
-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
-              >
-                Continue
-              </button>
+              <div className="flex justify-end pt-8 border-t border-line mt-auto">
+                <button 
+                  onClick={nextStep}
+                  className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95 shadow-sm"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -174,38 +176,40 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={safeGentle}
-            className="flex flex-col gap-12"
+            className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 relative"
           >
-            <div>
-              <h1 className="text-h1 font-medium tracking-h1 mb-4">Who you are.</h1>
+            <div className="md:col-span-5 md:sticky md:top-24 h-fit">
+              <h1 className="text-h1 font-medium tracking-h1 mb-4 text-balance">Who you are.</h1>
               <p className="text-body text-ink-soft">Fuko shows fewer, better matches — not everything. Your skills are the strongest signal we use.</p>
             </div>
             
-            <div className="flex flex-wrap gap-3">
-              {SKILL_OPTIONS.map((opt) => (
-                <TactileChip 
-                  key={opt.value}
-                  label={opt.label}
-                  selected={(profile.skills || []).includes(opt.value)}
-                  onClick={() => toggleArray("skills", opt.value)}
-                  accent={true}
-                />
-              ))}
-            </div>
+            <div className="md:col-span-7 flex flex-col">
+              <div className="flex flex-wrap gap-3 mb-16">
+                {SKILL_OPTIONS.map((opt) => (
+                  <TactileChip 
+                    key={opt.value}
+                    label={opt.label}
+                    selected={(profile.skills || []).includes(opt.value)}
+                    onClick={() => toggleArray("skills", opt.value)}
+                    accent={true}
+                  />
+                ))}
+              </div>
 
-            <div className="mt-8 flex justify-between">
-              <button 
-                onClick={prevStep}
-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
-              >
-                Back
-              </button>
-              <button 
-                onClick={nextStep}
-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
-              >
-                Continue
-              </button>
+              <div className="flex justify-between pt-8 border-t border-line mt-auto">
+                <button 
+                  onClick={prevStep}
+                  className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+                >
+                  Back
+                </button>
+                <button 
+                  onClick={nextStep}
+                  className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95 shadow-sm"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -217,38 +221,40 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={safeGentle}
-            className="flex flex-col gap-12"
+            className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 relative"
           >
-            <div>
-              <h1 className="text-h1 font-medium tracking-h1 mb-4">What you care about.</h1>
+            <div className="md:col-span-5 md:sticky md:top-24 h-fit">
+              <h1 className="text-h1 font-medium tracking-h1 mb-4 text-balance">What you care about.</h1>
               <p className="text-body text-ink-soft">Pick a few domains you want to explore.</p>
             </div>
             
-            <div className="flex flex-wrap gap-3">
-              {INTEREST_OPTIONS.map((opt) => (
-                <TactileChip 
-                  key={opt.value}
-                  label={opt.label}
-                  selected={(profile.interests || []).includes(opt.value)}
-                  onClick={() => toggleArray("interests", opt.value)}
-                  accent={true}
-                />
-              ))}
-            </div>
+            <div className="md:col-span-7 flex flex-col">
+              <div className="flex flex-wrap gap-3 mb-16">
+                {INTEREST_OPTIONS.map((opt) => (
+                  <TactileChip 
+                    key={opt.value}
+                    label={opt.label}
+                    selected={(profile.interests || []).includes(opt.value)}
+                    onClick={() => toggleArray("interests", opt.value)}
+                    accent={true}
+                  />
+                ))}
+              </div>
 
-            <div className="mt-8 flex justify-between">
-              <button 
-                onClick={prevStep}
-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
-              >
-                Back
-              </button>
-              <button 
-                onClick={nextStep}
-                className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95"
-              >
-                Continue
-              </button>
+              <div className="flex justify-between pt-8 border-t border-line mt-auto">
+                <button 
+                  onClick={prevStep}
+                  className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+                >
+                  Back
+                </button>
+                <button 
+                  onClick={nextStep}
+                  className="h-12 px-8 rounded-full bg-ink text-paper text-body font-medium transition-transform hover:scale-[0.98] active:scale-95 shadow-sm"
+                >
+                  Continue
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -260,66 +266,68 @@ export default function ProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={safeGentle}
-            className="flex flex-col gap-12"
+            className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 relative"
           >
-            <div>
-              <h1 className="text-h1 font-medium tracking-h1 mb-4">The basics.</h1>
+            <div className="md:col-span-5 md:sticky md:top-24 h-fit">
+              <h1 className="text-h1 font-medium tracking-h1 mb-4 text-balance">The basics.</h1>
               <p className="text-body text-ink-soft">Add your location to unlock the &quot;Near you&quot; feed, plus optional details for student roles.</p>
             </div>
             
-            <div className="flex flex-col gap-6 max-w-sm">
-              <label className="flex flex-col gap-2">
-                <span className="text-small font-medium text-ink-soft">Location</span>
-                <input 
-                  type="text" 
-                  value={profile.location || ""}
-                  onChange={e => setProfile(p => ({ ...p, location: e.target.value }))}
-                  placeholder="e.g. Bangalore, Remote"
-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
-                />
-              </label>
-              
-              <label className="flex flex-col gap-2">
-                <span className="text-small font-medium text-ink-soft">Education</span>
-                <input 
-                  type="text" 
-                  value={profile.education || ""}
-                  onChange={e => setProfile(p => ({ ...p, education: e.target.value }))}
-                  placeholder="e.g. BITS Pilani"
-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
-                />
-              </label>
+            <div className="md:col-span-7 flex flex-col">
+              <div className="flex flex-col gap-6 max-w-sm mb-16">
+                <label className="flex flex-col gap-2">
+                  <span className="text-small font-medium text-ink-soft">Location</span>
+                  <input 
+                    type="text" 
+                    value={profile.location || ""}
+                    onChange={e => setProfile(p => ({ ...p, location: e.target.value }))}
+                    placeholder="e.g. Bangalore, Remote"
+                    className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+                  />
+                </label>
+                
+                <label className="flex flex-col gap-2">
+                  <span className="text-small font-medium text-ink-soft">Education</span>
+                  <input 
+                    type="text" 
+                    value={profile.education || ""}
+                    onChange={e => setProfile(p => ({ ...p, education: e.target.value }))}
+                    placeholder="e.g. BITS Pilani"
+                    className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+                  />
+                </label>
 
-              <label className="flex flex-col gap-2">
-                <span className="text-small font-medium text-ink-soft">Study Year</span>
-                <input 
-                  type="text" 
-                  value={profile.studyYear || ""}
-                  onChange={e => setProfile(p => ({ ...p, studyYear: e.target.value }))}
-                  placeholder="e.g. 3"
-                  className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
-                />
-              </label>
-            </div>
+                <label className="flex flex-col gap-2">
+                  <span className="text-small font-medium text-ink-soft">Study Year</span>
+                  <input 
+                    type="text" 
+                    value={profile.studyYear || ""}
+                    onChange={e => setProfile(p => ({ ...p, studyYear: e.target.value }))}
+                    placeholder="e.g. 3"
+                    className="h-12 px-4 rounded-md border border-line bg-surface text-ink focus:outline-none focus:border-ink transition-colors"
+                  />
+                </label>
+              </div>
 
-            <div className="mt-8 flex justify-between">
-              <button 
-                onClick={prevStep}
-                className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
-              >
-                Back
-              </button>
-              <button 
-                onClick={hasMeaningfulIdentity ? handleComplete : undefined}
-                className={`h-12 px-8 rounded-full text-body font-medium transition-transform ${
-                  hasMeaningfulIdentity
-                    ? "bg-accent text-accent-ink hover:scale-[0.98] active:scale-95"
-                    : "bg-surface-sunk text-ink-faint cursor-not-allowed"
-                }`}
-                title={hasMeaningfulIdentity ? "" : "Select at least one skill or interest to continue"}
-              >
-                Show my feed
-              </button>
+              <div className="flex justify-between pt-8 border-t border-line mt-auto">
+                <button 
+                  onClick={prevStep}
+                  className="h-12 px-8 rounded-full border border-line text-ink text-body font-medium transition-colors hover:bg-surface-sunk"
+                >
+                  Back
+                </button>
+                <button 
+                  onClick={hasMeaningfulIdentity ? handleComplete : undefined}
+                  className={`h-12 px-8 rounded-full text-body font-medium transition-transform shadow-sm ${
+                    hasMeaningfulIdentity
+                      ? "bg-accent text-accent-ink hover:scale-[0.98] active:scale-95"
+                      : "bg-surface-sunk text-ink-faint cursor-not-allowed"
+                  }`}
+                  title={hasMeaningfulIdentity ? "" : "Select at least one skill or interest to continue"}
+                >
+                  Show my feed
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

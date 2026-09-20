@@ -11,7 +11,7 @@ export function BackButton() {
   if (pathname === "/" || pathname === "/about") return null;
 
   return (
-    <div className="max-w-3xl mx-auto w-full px-6 pt-4 pb-0">
+    <div className="max-w-5xl mx-auto w-full px-6 pt-4 pb-0">
       <button
         onClick={() => router.back()}
         className="inline-flex items-center gap-1.5 text-caption text-ink-faint hover:text-ink-soft transition-colors duration-150 group"
