@@ -1,8 +1,8 @@
 import { runSync } from "../lib/sync/runSync";
 
-export const handler = async (event: unknown, _context?: unknown) => {
+export const handler = async (event: unknown) => {
   console.log("[Lambda] Invoked with event:", JSON.stringify(event));
-  
+
   const result = await runSync();
 
   if (!result.success) {
@@ -20,7 +20,7 @@ export const handler = async (event: unknown, _context?: unknown) => {
   };
 };
 
-// Local testing execution
-if (require.main === module) {
-  handler({}, {}).then(res => console.log("Local execution result:", res));
+// Local testing execution: check if this file is the entry point
+if (process.argv[1] && process.argv[1].includes('sync.ts')) {
+  handler({}).then(res => console.log("Local execution result:", res));
 }
