@@ -1,8 +1,8 @@
 # [Fuko](https://main.d2punv4aorsj85.amplifyapp.com/)
 
-**Focused Opportunities, without the search.**
+**Focused Opportunities, built for clarity.**
 
-Fuko reads every open opportunity — GitHub issues, bounties, hackathons, competitions — and surfaces only the few that genuinely fit *you*. No infinite lists, no filtering through noise. You tell it who you are; it hands you what's worth your attention, each with a reason.
+Fuko ingests open opportunities (GitHub issues, bounties, hackathons, competitions) and returns only the ones that match a user's real profile. Instead of a searchable list, it produces a small ranked set, each result annotated with the signals that produced the match.
 
 <p>
   <img alt="Next.js" src="https://img.shields.io/badge/Next.js-000?logo=next.js&logoColor=white">
@@ -14,43 +14,39 @@ Fuko reads every open opportunity — GitHub issues, bounties, hackathons, compe
 
 ---
 
-## Why Fuko is different
+## Core principle
 
-Most opportunity platforms show you everything and let you filter. Fuko works the other way around: **the default is silence.** Something appears in your feed *only* because it matched you — not because it's trending, and not just because it exists.
+Most platforms index everything and rely on filters. Fuko inverts that: an opportunity is shown only when it matches the profile.
 
-The rule that makes this work:
+> **Opportunity type is a preference, not a relevance signal.**
 
-> **Opportunity type is intent, never relevance.**
-
-Selecting "Hackathon" tells Fuko you're interested in hackathons — it does **not** mean "show me every hackathon." A hackathon that also matches your skills ranks higher. A hackathon that matches nothing about you never appears. Every match reason shown is real and traceable.
-
-That single principle is the difference between a personalized feed and yet another search box with a nicer UI.
+Selecting "Hackathon" records intent. It does not qualify every hackathon. Type can raise ranking, but a match requires at least one concrete profile signal: a skill, an interest, or a location. Results that rely on type alone are excluded. Every reason shown maps to a real matched field.
 
 ---
 
 ## Two streams
 
-Fuko splits opportunities by how you actually engage with them:
+Opportunities are classified by engagement model, not by source:
 
-- **Contribute** — remote, skill-based open work: GitHub issues, open-source bounties, contribution campaigns. Location doesn't matter here. Ranked by how closely your tech stack matches.
-- **Near you** — time-and-place events you attend in person: hackathons, meetups, college competitions. Ranked by location first, then interest.
+- **Contribute:** remote, skill-based work such as GitHub issues, bounties, and contribution campaigns. Ranked by skill and tech overlap. Location is ignored.
+- **Near you:** in-person events such as hackathons, meetups, and college competitions. Ranked by location first, then interest.
 
 ---
 
-## How matching works
+## Matching engine
 
-- **Relevance gate.** An opportunity enters your feed only with at least one real profile signal — a matched skill, interest, or location. Type-only matches are excluded by design.
-- **Token-accurate matching.** Comparisons are whole-token, with safe normalization — so `cli` never falsely matches `client`, and acronyms like `CSS`, `AWS`, and `iOS` are preserved.
-- **Real enrichment, never inference.** GitHub opportunities are enriched with each repo's actual languages and topics, so a reason like `Matched on TypeScript · Python` reflects the real tech stack — never guessed from a title or description.
-- **Progressive, honest reveal.** Five at a time, with true counts. If only three things genuinely fit you, Fuko shows three. If nothing fits yet, it says so — it never pads the feed to look busy.
+- **Relevance gate.** An opportunity qualifies only with at least one concrete signal (matched skill, interest, or location). Type-only matches are dropped.
+- **Token-accurate comparison.** Matching runs on whole tokens with safe normalization. `cli` does not match `client`, and acronyms such as `CSS`, `AWS`, and `iOS` are preserved.
+- **Metadata enrichment.** GitHub opportunities are enriched with each repository's real languages and topics, so a reason like `Matched on TypeScript · Python` reflects the actual stack. Nothing is inferred from titles or descriptions.
+- **Deterministic reveal.** Results load five at a time with true counts. If three qualify, three are shown. If none qualify, the feed returns an explicit empty state.
 
 ---
 
 ## Design
 
-- A calm, editorial base in **Light** and **Dark**, plus a playful **Funky** theme.
-- Spring-based microinteractions and a "considering" reveal that visualizes Fuko weighing every opportunity down to your few.
-- Accessible by default — all motion respects `prefers-reduced-motion`.
+- Three themes: Light, Dark, and Funky. Light and Dark are minimal; Funky adds color and motion.
+- Spring-based interactions, including a "considering" transition that renders the ranking pass before results resolve.
+- All motion respects `prefers-reduced-motion`.
 
 ---
 
@@ -58,48 +54,48 @@ Fuko splits opportunities by how you actually engage with them:
 
 | Layer | Stack |
 |---|---|
-| Frontend | Next.js (App Router) · TypeScript · Tailwind CSS · Framer Motion |
-| Data & sync | AWS DynamoDB · Lambda · SAM (automated opportunity sync) |
-| Sources | GitHub (issues & contribution campaigns) · [Brabble.ai](https://brabble.ai) (events) |
+| Frontend | Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion |
+| Data and sync | AWS DynamoDB, Lambda, SAM (automated opportunity sync) |
+| Sources | GitHub (issues, contribution campaigns), [Brabble.ai](https://brabble.ai) (events) |
 
 ---
 
 ## Getting started
 
-**Prerequisites:** Node.js 18+ and npm.
+Prerequisites: Node.js 18+ and npm.
 
 ```bash
 git clone https://github.com/MaybeSomeone-arc18/fuko.git
 cd fuko
 npm install
-cp .env.local.example .env.local   # fill in the values below
+cp .env.local.example .env.local   # set the values below
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-> For quick local development without AWS, set `USE_MOCK_DB=true` to use an in-memory store.
+For local development without AWS, set `USE_MOCK_DB=true` to use an in-memory store.
 
 ### Environment variables
 
 | Variable | Description | Default |
 |---|---|---|
-| `GITHUB_TOKEN` | Raises the GitHub API rate limit for enriching opportunities with repo languages/topics. A classic token with no scopes (or `public_repo`) is enough. | — |
+| `GITHUB_TOKEN` | Raises the GitHub API rate limit for enriching opportunities with repo languages and topics. A classic token with no scopes (or `public_repo`) is enough. | none |
 | `DYNAMODB_REGION` | AWS region for the opportunities table. | `ap-south-1` |
 | `DYNAMODB_TABLE_NAME` | DynamoDB table name. | `FukoOpportunities` |
 | `USE_MOCK_DB` | Set to `true` to bypass AWS and use an in-memory store. | `false` |
 
 ---
 
-## Data & enrichment
+## Data and enrichment
 
-Opportunities are synced from their sources into DynamoDB. A backfill script enriches GitHub opportunities with real technology signals (repo languages and topics), which is what makes skill matching genuine rather than keyword-based:
+Opportunities sync from their sources into DynamoDB. A backfill script enriches GitHub records with real technology signals (languages and topics), which makes skill matching structural rather than keyword-based:
 
 ```bash
 npx tsx --env-file=.env.local scripts/enrich-github.ts
 ```
 
-The enrichment is resumable and non-destructive — it only writes when a fetch succeeds and skips already-enriched records.
+Enrichment is resumable and non-destructive: it writes only on a successful fetch and skips records that already have data.
 
 ---
 
@@ -112,28 +108,40 @@ src/
 │   ├── profile/              # Onboarding (intent vs. identity)
 │   ├── opportunities/        # The feed (Contribute / Near you)
 │   │   └── [id]/             # Opportunity detail
-│   ├── about/                # What Fuko is
+│   ├── about/                # Product overview
 │   └── components/           # Shared UI
 ├── lib/
-│   ├── matching.ts           # Relevance gate + ranking
-│   ├── motion.ts             # Spring presets & motion variants
+│   ├── matching.ts           # Relevance gate and ranking
+│   ├── motion.ts             # Spring presets and motion variants
 │   ├── theme.tsx             # Light / Dark / Funky
 │   ├── db/                   # DynamoDB access
-│   └── sources/              # GitHub & Brabble adapters
-└── scripts/                  # Enrichment & sync tooling
+│   └── sources/              # GitHub and Brabble adapters
+└── scripts/                  # Enrichment and sync tooling
 ```
 
 ---
 
 ## Roadmap
 
-- Google sign-in with a full guest mode
-- Encrypted, portable user profiles
-- More sources (GitLab, Devpost, Unstop, and beyond)
-- Saved opportunities and deadline reminders
+**In progress**
+- [ ] **Editable profiles:** change saved skills, interests, and location anytime; the feed re-resolves live.
+- [ ] **Deeper taxonomy:** more skills, topics, and opportunity types for precise profiles.
+- [ ] **Dynamic Funky theme:** richer motion and reactive elements.
+- [ ] **Ongoing UI refinement** across all surfaces.
+
+**Planned**
+- [ ] **Google sign-in** with a full guest mode.
+- [ ] **Encrypted, portable profiles.**
+- [ ] **Saved opportunities and deadline reminders.**
+- [ ] **More sources:** GitLab, Devpost, Unstop.
+- [ ] **Richer event data:** themes and tracks so "Near you" ranks on interest, not location alone.
+
+**Exploring**
+- [ ] Ranking that adapts to saves and skips.
+- [ ] A weekly digest of newly matching opportunities.
 
 ---
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).
