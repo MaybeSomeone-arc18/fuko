@@ -42,7 +42,7 @@ export function ConsideringSequence({ totalCount, onDone }: ConsideringProps) {
   return (
     <div className="flex flex-col">
       {/* Status line */}
-      <div className="mb-16 h-8 overflow-hidden">
+      <div className="mb-16 h-12 sm:h-16 overflow-hidden">
         <AnimatePresence mode="popLayout">
           {phase === "profile" && (
             <motion.p
